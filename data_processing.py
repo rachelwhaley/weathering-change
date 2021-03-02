@@ -14,7 +14,10 @@ ZIP_COLS = [(0,11), (12,17), (18,None)]
 # feed in all the files (13 weather files)
 # all files need headers
 
+# read in all the weather files and parse and merge
+
 # process the fixed width files
+
 def station_config(station_file, zip_file):
     # column definitions at https://www1.ncdc.noaa.gov/pub/data/normals/1981-2010/readme.txt
     stations_df = pd.read_fwf(station_file, 
