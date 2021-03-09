@@ -53,10 +53,16 @@ def weather_config(stations_df, weather_file):
                                   names = ['station_code', 'month', 'day', '0', '1', '2', '3', '4', '5', '6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','23'])
     new_df = pd.merge(stations_df, this_weather_df, on='station_code', how='right')
     # calculate average for the day
-    new_df['average'] = new_df.iloc[:, 13:].astype(float).mean(axis=1)
+    new_df['average'] = new_df.iloc[:, 13:].astype(float).mean(axis=1)/10
+    # new_df['avg_temp'] new_df['average']/10
+
+    # make temps divided by 10
 
     print(new_df.shape)
     print(new_df.iloc[:20])
+
+    new_df.to_csv('output.csv')
+
     return new_df
 
 # read in each weather attribute
