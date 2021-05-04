@@ -1,5 +1,7 @@
 import sys 
 import pandas as pd 
+import time
+import csv
 #0        1         2         3         4         5         6         7         8         9         0         1         2         3         4         5         6         7         8     
 #12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345
 #AQW00061705 01 10 -9999    838C   840S   835S   835C   833S   835S   842C   860S   878S   883C   896S   896S   894C   896S   896S   891C   878S   871S   856C   849S   846S   846C   842S
@@ -44,11 +46,23 @@ def station_config(station_file, zip_file):
     print(stations_df.shape)
     print(stations_df.iloc[:3])
 
+    # filter for only the stations dad selected
+    include_file = open('StationInclude.csv', 'r')
+    include_list = csv.reader(include_file)
+    selected_stations = []
+
+    for item in include_list:
+        selected_stations.append(item[0])
+
+    stations_filtered = stations_df[stations_df['station_code'].isin(selected_stations)]
+    stations_filtered = stations_filtered.reset_index(drop=True)
+
+    print("length of filtered stations = " + str(stations_filtered.shape[0]))
+
     zip_df = pd.read_fwf(zip_file, colspecs = ZIP_COLS, names = ['station_code', 'zip_code', 'city'])
-    print(zip_df.shape)
-    print(zip_df.iloc[:3])
-    result_df = pd.merge(stations_df, zip_df, on='station_code', how='left')
+    result_df = pd.merge(stations_filtered, zip_df, on='station_code', how='left')
     print(result_df.iloc[:20])
+    print("length of results = " + str(result_df.shape[0]))
     return result_df
 
 def weather_temp_config(stations_df, weather_file):
@@ -56,23 +70,32 @@ def weather_temp_config(stations_df, weather_file):
                                   colspecs = HLY_TEMP_COLS, 
                                   names = ['station_code', 'month', 'day', '7','8','9','10','11','12','13','14','15','16','17','18','19'])
 #                                 names = ['station_code', 'month', 'day', '0', '1', '2', '3', '4', '5', '6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','23'])
-    this_weather_df.replace(to_replace = -9999, value=None, inplace=True)
+    
+    # filter for only the stations dad selected
+    include_file = open('StationInclude.csv', 'r')
+    include_list = csv.reader(include_file)
+    selected_stations = []
+
+    for item in include_list:
+        selected_stations.append(item[0])
+
+    this_weather_filtered = this_weather_df[this_weather_df['station_code'].isin(selected_stations)]
+    this_weather_filtered = this_weather_filtered.reset_index(drop=True)
+    
+    this_weather_filtered.replace(to_replace = -9999, value=None, inplace=True)
     # calculate average for the day
-    this_weather_df.iloc[:, 3:].div(10)
-    this_weather_df['average'] = this_weather_df.iloc[:, 3:].astype(float).mean(axis=1)/10
+    this_weather_filtered.iloc[:, 3:].div(10)
+    this_weather_filtered['average'] = this_weather_filtered.iloc[:, 3:].astype(float).mean(axis=1)/10
 
     # TO ADD THE STATIONS BACK IN 
-    # new_df = pd.merge(stations_df, this_weather_df, on='station_code', how='right')
-    # this_weather_df.iloc[:, 13:].div(10)
-    # this_weather_df['average'] = this_weather_df.iloc[:, 13:].astype(float).mean(axis=1)/10
-    # NOT WORKING new_df['avg_temp'] new_df['average']/10
+    # new_df = pd.merge(stations_df, this_weather_df, on='station_code', how='left')
 
-    # make temps divided by 10
+    
 
-    print(this_weather_df.shape)
-    print(this_weather_df.iloc[:20])
+    print(this_weather_filtered.shape)
+    # print(this_weather_df.iloc[:20])
 
-    return this_weather_df
+    return this_weather_filtered
 
 # read in each weather attribute
 
@@ -80,6 +103,8 @@ if __name__=='__main__':
     if len(sys.argv) == 0:
         print("Usage: ")
     stations = station_config('hly-inventory.txt', 'zipcodes-normals-stations.txt')
+    stations.to_csv('stations' + str(time.time())  + '.csv')
+
     
     # temps 
     weather_avg = weather_temp_config(stations, 'hly-temp-normal.txt')
