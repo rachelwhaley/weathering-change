@@ -106,12 +106,15 @@ def weather_hour_config(selected_stations):
     this_weather_filtered.replace(to_replace = -9999, value=None, inplace=True)
     # calculate average for the day
     this_weather_filtered.iloc[:, 3:].div(10)
+    #TODO: divide weather #s like temps by 10
+
     # this_weather_filtered['average'] = this_weather_filtered.iloc[:, 3:].astype(float).mean(axis=1)/10
 
     # start with 1 file to construct the DateHourCodes and grab the weather facts
     hour_date_dicts = []
     for index, row in this_weather_filtered.iterrows() :
-        date_code = str(row['month']) + str(row['day'])
+        date_code = 'D' + '{0:02d}{1:02d}'.format(row['month'], row['day'])
+        # date_code = str(row['month']) + str(row['day'])
         for hour_code in ['7','8','9','10','11','12','13','14','15','16','17','18','19']:
             date_hour_code = date_code + hour_code
             hourly = {'station_code': row['station_code'], 'date_hour_code': date_hour_code, 'temp_normal': row[hour_code]}
@@ -122,7 +125,9 @@ def weather_hour_config(selected_stations):
     print(df.iloc[:20])
 
     # then add in the rest of the files
+    #TODO: Make this DRY
     more_weather_files = ['hly-temp-10pctl.txt', 'hly-temp-90pctl.txt']
+    #TODO: Add the rest of the weather files
     more_weather_dfs = []
     for file in more_weather_files:
         this_weather_df = pd.read_fwf(file, 
@@ -132,7 +137,8 @@ def weather_hour_config(selected_stations):
         this_weather_filtered = this_weather_filtered.reset_index(drop=True)
         hour_date_dicts = []
         for index, row in this_weather_filtered.iterrows() :
-            date_code = str(row['month']) + str(row['day'])
+            date_code = 'D' + '{0:02d}{1:02d}'.format(row['month'], row['day'])
+            # date_code = str(row['month']) + str(row['day'])
             for hour_code in ['7','8','9','10','11','12','13','14','15','16','17','18','19']:
                 date_hour_code = date_code + hour_code
                 hourly = {'station_code': row['station_code'], 'date_hour_code': date_hour_code, file.split('.')[0] : row[hour_code]}
