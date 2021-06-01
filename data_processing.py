@@ -66,8 +66,8 @@ def weather_hour_config(selected_stations):
                 hourly = {'station_code': row['station_code'], 'date_hour_code': date_hour_code, this_filename : row[hour_code]}
                 hour_date_dicts.append(hourly)
         new_df = pd.DataFrame(hour_date_dicts)
-        if 'temp' in this_filename:  # divide temps by 10 for human-readable
-            new_df[this_filename] = new_df[this_filename]/10
+        # if 'temp' in this_filename:  # divide temps by 10 for human-readable
+        new_df[this_filename] = new_df[this_filename]/10
         all_weather_dfs.append(new_df)
     
     df = all_weather_dfs[0]
